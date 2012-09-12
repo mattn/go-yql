@@ -1,0 +1,7 @@
+Run with:
+
+	go run gorss.go
+	// for private queries
+    go run yc.go \
+        -key YOUR_YAHOO_CONSUMER_KEY \
+        -secret AND_SECRET
