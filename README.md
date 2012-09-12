@@ -1,4 +1,4 @@
-YQL Go wrapper
+YQL GoLang api wrapper
 =============================
 
 
