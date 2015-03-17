@@ -65,12 +65,14 @@ func (s *YQLStmt) Close() error {
 }
 
 func (s *YQLStmt) NumInput() int {
+	// TODO: strict check
 	return strings.Count(s.q, "?")
 }
 
 func (s *YQLStmt) bind(args []driver.Value) error {
 	b := s.q
 	for _, v := range args {
+		// TODO: strict check
 		b = strings.Replace(b, "?", fmt.Sprintf("%q", v), 1)
 	}
 	s.q = b
