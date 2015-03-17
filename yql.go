@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	oauth "github.com/akrennmair/goauth"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -93,7 +92,6 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 			CallBackURL:     "oob",
 			ConsumerKey:     s.c.key,
 			ConsumerSecret:  s.c.secret,
-			Type:            oauth.TWOLEGGED,
 			Timeout:         5e9,
 		}
 		//log.Println("getting oauth? ", s.q)
@@ -108,7 +106,6 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 		}
 	} else {
 		url := fmt.Sprintf("?q=%s&format=json", YQL_URL, url.QueryEscape(s.q))
-		//log.Println(url)
 		res, err = http.Get(url)
 	}
 
@@ -117,10 +114,7 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 	}
 	defer res.Body.Close()
 	var data interface{}
-	b, err := ioutil.ReadAll(res.Body)
-	//log.Println(string(b))
-
-	err = json.Unmarshal(b, &data)
+	err = json.NewDecoder(res.Body).Decode(&data)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Invalid Json: %v", err))
 	}
