@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	oauth "github.com/akrennmair/goauth"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -94,18 +93,15 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 			ConsumerSecret:  s.c.secret,
 			Timeout:         5e9,
 		}
-		//log.Println("getting oauth? ", s.q)
-		//log.Println(yqlOauth)
 		p := oauth.Params{}
 		p.Add(&oauth.Pair{Key: "format", Value: "json"})
 		p.Add(&oauth.Pair{Key: "q", Value: s.q})
 		res, err = yqlOauth.Get(YQL_URL, p, nil)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 	} else {
-		url := fmt.Sprintf("?q=%s&format=json", YQL_URL, url.QueryEscape(s.q))
+		url := fmt.Sprintf("%s?q=%s&format=json", YQL_URL, url.QueryEscape(s.q))
 		res, err = http.Get(url)
 	}
 
