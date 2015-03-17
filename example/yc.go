@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	oauth "github.com/akrennmair/goauth"
 	_ "github.com/mattn/go-yql"
-	"io/ioutil"
 	"log"
 )
 
@@ -17,22 +15,25 @@ var (
 
 func main() {
 	flag.Parse()
-	log.SetFlags(log.Ltime | log.Lshortfile)
-
-	log.Printf("key=%s   secret=%s", *conKey, *conSecret)
-
-	db, _ := sql.Open("yql", *conKey+"|"+*conSecret)
-
-	stmt, err := db.Query(
-		"select * from contentanalysis.analyze where url=?",
-		"http://www.nydailynews.com/entertainment/bar-refaeli-hottest-moments-gallery-1.1061268?old=%2Fgallery.html")
+	db, err := sql.Open("yql", *conKey+"|"+*conSecret)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		return
 	}
-	for stmt.Next() {
-		var data interface{}
-		stmt.Scan(&data)
-		fmt.Printf("%v\n", data)
+	for _, arg := range flag.Args() {
+		stmt, err := db.Query("select * from contentanalysis.analyze where url=?", arg)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		for stmt.Next() {
+			var data interface{}
+			err = stmt.Scan(&data)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+			fmt.Printf("%v\n", data)
+		}
 	}
 }
