@@ -7,14 +7,16 @@ import (
 	"errors"
 	"fmt"
 	oauth "github.com/akrennmair/goauth"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
+const endpoint = "http://query.yahooapis.com/v1/public/yql"
+
 var (
 	yqlOauth *oauth.OAuthConsumer
-	YQL_URL  string = "http://query.yahooapis.com/v1/public/yql"
 )
 
 func init() {
@@ -96,12 +98,12 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 		p := oauth.Params{}
 		p.Add(&oauth.Pair{Key: "format", Value: "json"})
 		p.Add(&oauth.Pair{Key: "q", Value: s.q})
-		res, err = yqlOauth.Get(YQL_URL, p, nil)
+		res, err = yqlOauth.Get(endpoint, p, nil)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		url := fmt.Sprintf("%s?q=%s&format=json", YQL_URL, url.QueryEscape(s.q))
+		url := fmt.Sprintf("%s?q=%s&format=json", endpoint, url.QueryEscape(s.q))
 		res, err = http.Get(url)
 	}
 
@@ -162,7 +164,7 @@ func (rc *YQLRows) Columns() []string {
 
 func (rc *YQLRows) Next(dest []driver.Value) error {
 	if rc.n == len(rc.d) {
-		return errors.New("EOF")
+		return io.EOF
 	}
 	if s, ok := rc.d[rc.n].(string); ok {
 		dest[0] = s
