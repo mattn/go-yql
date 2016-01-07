@@ -29,7 +29,10 @@ func (d *YQLDriver) Open(dsn string) (driver.Conn, error) {
 	if len(dsn) > 1 {
 		parts := strings.Split(dsn, "|")
 		if len(parts) == 2 {
-			return &YQLConn{http.DefaultClient, parts[0], parts[1]}, nil
+			return &YQLConn{http.DefaultClient, parts[0], parts[1], ""}, nil
+		}
+		if len(parts) == 3 {
+			return &YQLConn{http.DefaultClient, parts[0], parts[1], parts[2]}, nil
 		}
 
 	}
@@ -40,6 +43,7 @@ type YQLConn struct {
 	c      *http.Client
 	key    string
 	secret string
+	env    string
 }
 
 func (c *YQLConn) Close() error {
@@ -105,7 +109,14 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 			return nil, err
 		}
 	} else {
-		url := fmt.Sprintf("%s?q=%s&format=json", endpoint, url.QueryEscape(s.q))
+		values := url.Values{}
+		values.Add("q", s.q)
+		values.Add("format", "json")
+		if s.c.env != "" {
+			values.Add("env", s.c.env)
+		}
+
+		url := endpoint + "?" + values.Encode()
 		res, err = http.Get(url)
 	}
 
