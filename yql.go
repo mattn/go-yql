@@ -104,7 +104,18 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 		p := oauth.Params{}
 		p.Add(&oauth.Pair{Key: "format", Value: "json"})
 		p.Add(&oauth.Pair{Key: "q", Value: s.q})
-		res, err = yqlOauth.Get(endpoint, p, nil)
+
+		s, rt, err := yqlOauth.GetRequestAuthorizationURL()
+		if err != nil {
+			return nil, err
+		}
+		var pin string
+		fmt.Printf("Open %s In your browser.\n Allow access and then enter the PIN number\n", s)
+		fmt.Printf("PIN Number: ")
+		fmt.Scanln(&pin)
+		at := yqlOauth.GetAccessToken(rt.Token, pin)
+
+		res, err = yqlOauth.Get(endpoint, p, at)
 		if err != nil {
 			return nil, err
 		}
