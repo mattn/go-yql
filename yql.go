@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const endpoint = "http://query.yahooapis.com/v1/public/yql"
+const endpoint = "https://query.yahooapis.com/v1/public/yql"
 
 var (
 	yqlOauth *oauth.OAuthConsumer
@@ -35,6 +35,9 @@ func (d *YQLDriver) Open(dsn string) (driver.Conn, error) {
 			return &YQLConn{http.DefaultClient, parts[0], parts[1], parts[2]}, nil
 		}
 
+	}
+	if dsn != "" {
+		return &YQLConn{c: http.DefaultClient, env: dsn}
 	}
 	return &YQLConn{c: http.DefaultClient}, nil
 }
