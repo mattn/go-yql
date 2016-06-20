@@ -37,7 +37,7 @@ func (d *YQLDriver) Open(dsn string) (driver.Conn, error) {
 
 	}
 	if dsn != "" {
-		return &YQLConn{c: http.DefaultClient, env: dsn}
+		return &YQLConn{c: http.DefaultClient, env: dsn}, nil
 	}
 	return &YQLConn{c: http.DefaultClient}, nil
 }
