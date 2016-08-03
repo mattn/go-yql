@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	oauth "github.com/akrennmair/goauth"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	oauth "github.com/akrennmair/goauth"
 )
 
 const endpoint = "https://query.yahooapis.com/v1/public/yql"
@@ -159,10 +160,15 @@ func (s *YQLStmt) Query(args []driver.Value) (driver.Rows, error) {
 	if !ok {
 		return nil, errors.New("Unsupported result")
 	}
+	var last interface{}
 	for _, v := range results {
 		if vv, ok := v.([]interface{}); ok {
 			return &YQLRows{s, 0, vv}, nil
 		}
+		last = v
+	}
+	if last != nil {
+		return &YQLRows{s, 0, []interface{}{last}}, nil
 	}
 	return nil, errors.New("Unsupported result")
 }
